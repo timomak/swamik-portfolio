@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initContactForm();
     initScrollToTop();
     initProgressBars();
+    updateCopyrightYear();
 });
 
 // Theme Toggle Functionality
@@ -331,4 +332,12 @@ document.addEventListener('keydown', (e) => {
     } else {
         konamiIndex = 0;
     }
-}); 
+});
+
+// Update Copyright Year
+function updateCopyrightYear() {
+    const yearElement = document.getElementById('current-year');
+    if (yearElement) {
+        yearElement.textContent = new Date().getFullYear();
+    }
+} 

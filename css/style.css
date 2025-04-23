@@ -4,6 +4,7 @@
     --primary-color: #4361ee;
     --secondary-color: #3a0ca3;
     --accent-color: #4cc9f0;
+    --accent-hover: #3ab0d9;
     --text-color: #333;
     --text-color-light: #777;
     --bg-color: #ffffff;
@@ -18,6 +19,7 @@
     --dm-primary-color: #4cc9f0;
     --dm-secondary-color: #4361ee;
     --dm-accent-color: #7209b7;
+    --dm-accent-hover: #8a1ed0;
     --dm-text-color: #f8f9fa;
     --dm-text-color-light: #ced4da;
     --dm-bg-color: #121212;
@@ -185,6 +187,18 @@ body.dark-mode .section-title::after {
     color: white;
     box-shadow: var(--shadow-md);
     transform: translateY(-3px);
+}
+
+.accent-btn {
+    background-color: var(--accent-color, #FF6B6B);
+    color: white;
+    border: none;
+}
+
+.accent-btn:hover {
+    background-color: var(--accent-hover, #FF5252);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
 }
 
 body.dark-mode .primary-btn {

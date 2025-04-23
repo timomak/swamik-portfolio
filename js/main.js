@@ -340,4 +340,7 @@ function updateCopyrightYear() {
     if (yearElement) {
         yearElement.textContent = new Date().getFullYear();
     }
-} 
+}
+
+// Update current year in footer
+document.getElementById('current-year').textContent = new Date().getFullYear(); 

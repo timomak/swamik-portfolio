@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circle Pop Game | Swamik Lamichhane</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .game-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            background: var(--bg-color);
+        }
+
+        .game-ui {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 10;
+        }
+
+        .score-container, .timer-container {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 10px 20px;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            color: var(--text-color);
+        }
+
+        .circle {
+            position: absolute;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .circle:hover {
+            transform: scale(1.1);
+        }
+
+        .circle.popped {
+            transform: scale(0);
+            opacity: 0;
+        }
+
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 20;
+            display: none;
+        }
+
+        .game-over h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+
+        .final-score {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: var(--accent-color);
+        }
+
+        .home-btn {
+            margin-top: 20px;
+        }
+
+        .accent-btn {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .dark-theme .game-over {
+            background: rgba(30, 30, 30, 0.95);
+        }
+        
+        .dark-theme .score-container, 
+        .dark-theme .timer-container {
+            background: rgba(30, 30, 30, 0.3);
+            color: var(--dm-text-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-ui">
+            <div class="score-container">Score: <span id="score">0</span></div>
+            <div class="timer-container">Time: <span id="timer">10</span>s</div>
+        </div>
+        
+        <div class="game-over">
+            <h2>Game Over!</h2>
+            <div>Your score:</div>
+            <div class="final-score" id="final-score">0</div>
+            <a href="/" class="btn primary-btn home-btn">Return Home</a>
+            <button id="play-again" class="btn accent-btn">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const gameContainer = document.querySelector('.game-container');
+            const scoreElement = document.getElementById('score');
+            const timerElement = document.getElementById('timer');
+            const gameOverScreen = document.querySelector('.game-over');
+            const finalScoreElement = document.getElementById('final-score');
+            const playAgainButton = document.getElementById('play-again');
+            
+            let score = 0;
+            let timeLeft = 10;
+            let gameActive = true;
+            let circles = [];
+            
+            const colors = [
+                '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFBE0B', 
+                '#FB5607', '#FF006E', '#8338EC', '#3A86FF',
+                '#FF9F1C', '#E71D36', '#2EC4B6', '#FDFFFC'
+            ];
+            
+            function createCircle() {
+                if (!gameActive) return;
+                
+                const size = Math.random() * 60 + 40; // 40-100px
+                const circle = document.createElement('div');
+                circle.className = 'circle';
+                
+                // Random position
+                const posX = Math.random() * (window.innerWidth - size);
+                const posY = Math.random() * (window.innerHeight - size);
+                
+                circle.style.width = `${size}px`;
+                circle.style.height = `${size}px`;
+                circle.style.left = `${posX}px`;
+                circle.style.top = `${posY}px`;
+                
+                // Random color
+                const colorIndex = Math.floor(Math.random() * colors.length);
+                circle.style.backgroundColor = colors[colorIndex];
+                
+                // Create image element inside circle
+                const img = document.createElement('div');
+                img.style.position = 'absolute';
+                img.style.top = '0';
+                img.style.left = '0';
+                img.style.width = '100%';
+                img.style.height = '100%';
+                img.style.backgroundImage = 'url("images/profile.png")';
+                img.style.backgroundSize = 'cover';
+                img.style.backgroundPosition = 'center';
+                img.style.borderRadius = '50%';
+                img.style.mixBlendMode = 'overlay';
+                img.style.opacity = '0.8';
+                
+                circle.appendChild(img);
+                
+                // Add pop event
+                circle.addEventListener('click', () => {
+                    if (!gameActive) return;
+                    
+                    circle.classList.add('popped');
+                    score++;
+                    scoreElement.textContent = score;
+                    
+                    // Remove after animation
+                    setTimeout(() => {
+                        if (circle.parentNode) {
+                            circle.parentNode.removeChild(circle);
+                        }
+                    }, 300);
+                });
+                
+                gameContainer.appendChild(circle);
+                circles.push(circle);
+                
+                // Random movement
+                const speedX = (Math.random() - 0.5) * 3;
+                const speedY = (Math.random() - 0.5) * 3;
+                
+                function moveCircle() {
+                    if (!gameActive || !circle.parentNode) return;
+                    
+                    let x = parseFloat(circle.style.left);
+                    let y = parseFloat(circle.style.top);
+                    
+                    x += speedX;
+                    y += speedY;
+                    
+                    // Bounce off walls
+                    if (x <= 0 || x + size >= window.innerWidth) {
+                        x = Math.max(0, Math.min(x, window.innerWidth - size));
+                        speedX *= -1;
+                    }
+                    
+                    if (y <= 0 || y + size >= window.innerHeight) {
+                        y = Math.max(0, Math.min(y, window.innerHeight - size));
+                        speedY *= -1;
+                    }
+                    
+                    circle.style.left = `${x}px`;
+                    circle.style.top = `${y}px`;
+                    
+                    requestAnimationFrame(moveCircle);
+                }
+                
+                requestAnimationFrame(moveCircle);
+            }
+            
+            function startGame() {
+                score = 0;
+                timeLeft = 10;
+                gameActive = true;
+                scoreElement.textContent = score;
+                timerElement.textContent = timeLeft;
+                gameOverScreen.style.display = 'none';
+                
+                // Clear existing circles
+                circles.forEach(circle => {
+                    if (circle.parentNode) {
+                        circle.parentNode.removeChild(circle);
+                    }
+                });
+                circles = [];
+                
+                // Create initial circles
+                for (let i = 0; i < 15; i++) {
+                    createCircle();
+                }
+                
+                // Add more circles over time
+                const circleInterval = setInterval(() => {
+                    if (!gameActive) {
+                        clearInterval(circleInterval);
+                        return;
+                    }
+                    
+                    if (circles.length < 30) {
+                        createCircle();
+                    }
+                }, 1000);
+                
+                // Timer countdown
+                const timerInterval = setInterval(() => {
+                    timeLeft--;
+                    timerElement.textContent = timeLeft;
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        clearInterval(circleInterval);
+                        endGame();
+                    }
+                }, 1000);
+            }
+            
+            function endGame() {
+                gameActive = false;
+                finalScoreElement.textContent = score;
+                gameOverScreen.style.display = 'block';
+                
+                // Add pop animation to remaining circles
+                circles.forEach(circle => {
+                    circle.classList.add('popped');
+                    setTimeout(() => {
+                        if (circle.parentNode) {
+                            circle.parentNode.removeChild(circle);
+                        }
+                    }, 500);
+                });
+            }
+            
+            // Start the game when page loads
+            startGame();
+            
+            // Play again button
+            playAgainButton.addEventListener('click', startGame);
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                circles.forEach(circle => {
+                    const size = parseFloat(circle.style.width);
+                    let x = parseFloat(circle.style.left);
+                    let y = parseFloat(circle.style.top);
+                    
+                    x = Math.min(x, window.innerWidth - size);
+                    y = Math.min(y, window.innerHeight - size);
+                    
+                    circle.style.left = `${x}px`;
+                    circle.style.top = `${y}px`;
+                });
+            });
+        });
+    </script>
+</body>
+</html> 
